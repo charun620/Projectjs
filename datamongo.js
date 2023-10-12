@@ -5,35 +5,18 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 
-Mongoose.connect("mongodb://localhost:27018/warehouse_db", { useNewUrlParser: true, useUnifiedTopology: true });
-// Mongoose.connect(
-//   "mongodb://*********@node52305-chern.proen.app.ruk-com.cloud:11550",
-//   {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   }
-// );
 
-const productSchema = new Mongoose.Schema({
-  ProductID: { type: Number, unique: true },
-  ProductName: String,
-  CompanyID: { type: Number, ref: 'ProductCompany' },
-  StockQuantity: Number
-});
+const Product = require("./proctble"); // Import  Productproctble.js 
+const ProductCompany = require("./compa"); // Import compa.js
 
-const Product = Mongoose.model("Product", productSchema);
 
-// Define ProductCompany Schema
-const productCompanySchema = new Mongoose.Schema({
-  CompanyID: { type: Number, unique: true },
-  CompanyName: String,
-  CompanyQuantity: Number
-});
-
-const ProductCompany = Mongoose.model("ProductCompany", productCompanySchema);
-
-// Create routes and start the server
-// (You'll need to add routes for CRUD operations)
+Mongoose.connect(
+  "mongodb://admin:yourpassword@ruk-com node",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 
 // Get all products
 app.get('/products', async (req, res) => {
@@ -85,6 +68,18 @@ app.delete('/products/:id', async (req, res) => {
   }
 });
 
+
+
+//Find company
+app.get('/companies', async (req, res) => {
+  try {
+    const products = await ProductCompany.find();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Get a specific company by CompanyID
 app.get('/companies/:id', async (req, res) => {
   try {
@@ -100,6 +95,26 @@ app.post('/companies', async (req, res) => {
   try {
     const company = await ProductCompany.create(req.body);
     res.json(company);
+    Product.aggregate([
+      {
+        $group: {
+          _id: "$CompanyID",
+          totalStock: { $sum: "$StockQuantity" }
+        }
+      },
+      {
+        $project: {
+          CompanyID: "$_id",
+          CompanyQuantity: "$totalStock",
+          _id: 0
+        }
+      }
+    ]).then(result => {console.log(result);
+      // you can update your ProductCompany collection with the calculated values
+      // For example, you can loop through the result and update each company's CompanyQuantity
+    }).catch(error => {
+      console.error(error);
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -124,6 +139,31 @@ app.delete('/companies/:id', async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 });
+
+
+//rerationships
+Product.aggregate([
+  {
+    $group: {
+      _id: "$CompanyID",
+      totalStock: { $sum: "$StockQuantity" }
+    }
+  },
+  {
+    $project: {
+      CompanyID: "$_id",
+      CompanyQuantity: "$totalStock",
+      _id: 0
+    }
+  }
+]).then(result => {console.log(result);
+  // you can update your ProductCompany collection with the calculated values
+  // For example, you can loop through the result and update each company's CompanyQuantity
+}).catch(error => {
+  console.error(error);
+});
+
+
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
 });
