@@ -11,7 +11,7 @@ const ProductCompany = require("./compa"); // Import compa.js
 
 
 Mongoose.connect(
-  "mongodb://admin:yourpassword@ruk-com node",
+  "mongodb://admin:พาสเวิดตัวเอง@nodeของruk-com",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
