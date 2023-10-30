@@ -144,6 +144,34 @@ app.delete("/companies/:id", async (req, res) => {
 //rerationships
 
 
+async function collectDataAndStoreInRelationTable() {
+  try {
+    // Retrieve data from the first table (Product)
+    const productData = await Product.find({}, "ProductID CompanyID");
+
+    // Retrieve data from the second table (ProductCompany)
+    const companyData = await ProductCompany.find({}, "CompanyID");
+
+    // Process the data and create entries for the ProductCompanyRelation table
+    const relations = [];
+    productData.forEach((product) => {
+      companyData.forEach((company) => {
+        const relation = {
+          ProductID: product.ProductID,
+          CompanyID: company.CompanyID,
+        };
+        relations.push(relation);
+      });
+    });
+
+    // Insert data into the ProductCompanyRelation table
+    await ProductCompanyRelation.insertMany(relations);
+
+    console.log("Data inserted into ProductCompanyRelation collection.");
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 collectDataAndStoreInRelationTable();
 const PORT = process.env.PORT || 3000;
