@@ -166,25 +166,36 @@ Product.aggregate([
     console.error(error);
   });
 
-  app.post("/productCompanyRelations", async (req, res) => {
+  async function collectDataAndStoreInRelationTable() {
     try {
-      const { ProductID, CompanyID } = req.body;
-      
-      // Assuming Product and ProductCompany are Mongoose models
-      const product = await Product.findById(ProductID);
-      const company = await ProductCompany.findById(CompanyID);
+      // Retrieve data from the first table (Product)
+      const productData = await Product.find({}, 'ProductID CompanyID');
   
-      if (!product || !company) {
-        throw new Error('Invalid ProductID or CompanyID');
-      }
+      // Retrieve data from the second table (ProductCompany)
+      const companyData = await ProductCompany.find({}, 'CompanyID');
   
-      const newRelation = new ProductCompanyRelation({ ProductID, CompanyID });
-      await newRelation.save();
-      res.json(newRelation);
+      // Process the data and create entries for the ProductCompanyRelation table
+      const relations = [];
+      productData.forEach(product => {
+        companyData.forEach(company => {
+          const relation = {
+            ProductID: product.ProductID,
+            CompanyID: company.CompanyID
+          };
+          relations.push(relation);
+        });
+      });
+  
+      // Insert data into the ProductCompanyRelation table
+      await ProductCompanyRelation.insertMany(relations);
+  
+      console.log('Data inserted into ProductCompanyRelation collection.');
     } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  });
+      console.error(error);
+    } 
+  }
+  
+  collectDataAndStoreInRelationTable();
 
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
