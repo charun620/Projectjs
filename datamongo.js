@@ -141,8 +141,15 @@ app.delete("/companies/:id", async (req, res) => {
   }
 });
 
-//rerationships
-
+//relationships
+app.get("/companyrelations", async (req, res) => {
+  try {
+    const companyRelations = await ProductCompanyRelation.find();
+    res.json(companyRelations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 async function collectDataAndStoreInRelationTable() {
   try {
