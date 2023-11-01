@@ -9,7 +9,7 @@ const ProductCompany = require("./compa"); // Import compa.js
 const ProductCompanyRelation = require("./rera");
 
 Mongoose.connect(
-  "mongodb://admin:POKxao84736@node53694-projectjs.proen.app.ruk-com.cloud",
+  "mongodb://admin:AYObih54131@node52305-chern.proen.app.ruk-com.cloud:11550",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
